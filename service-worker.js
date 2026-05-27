@@ -1,4 +1,4 @@
-const CACHE_NAME = "tiny-rsvp-reader-v2";
+const CACHE_NAME = "tiny-rsvp-reader-v3";
 const ASSETS = [
   "./",
   "./index.html",

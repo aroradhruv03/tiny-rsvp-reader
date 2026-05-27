@@ -51,6 +51,24 @@
   --shadow: 0 0 24px rgba(216, 75, 69, 0.12);
 }
 
+:root[data-theme="papyrus"] {
+  color-scheme: light;
+  --bg: #eee8d5;
+  --bg-soft: #f6f0df;
+  --panel: #fbf4df;
+  --panel-strong: #e5dcc5;
+  --text: #3d3527;
+  --muted: #82745a;
+  --faint: #d5c7a7;
+  --line: #a75f3b;
+  --accent: #9b5a36;
+  --accent-contrast: #fffaf0;
+  --button: #e7dcc4;
+  --button-hover: #f1e7cf;
+  --button-disabled: #ddd1b6;
+  --shadow: 0 0 18px rgba(117, 84, 46, 0.14);
+}
+
 * {
   box-sizing: border-box;
 }
@@ -82,6 +100,18 @@ body[data-font="serif"] .word-wrap {
 
 body[data-font="dyslexic"] .word-wrap {
   font-family: "Atkinson Hyperlegible", "Avenir Next", "Trebuchet MS", Verdana, system-ui, sans-serif;
+}
+
+body[data-font="opendyslexic"] .word-wrap {
+  font-family: "OpenDyslexic", "Atkinson Hyperlegible", "Avenir Next", "Trebuchet MS", Verdana, system-ui, sans-serif;
+}
+
+body[data-font="audela"] .word-wrap {
+  font-family: "Audela", "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+}
+
+body[data-font="glober"] .word-wrap {
+  font-family: "Glober", "Avenir Next", Avenir, "Helvetica Neue", Arial, sans-serif;
 }
 
 button,
@@ -168,6 +198,7 @@ input[type="radio"] {
   display: grid;
   place-items: center;
   overflow: hidden;
+  touch-action: manipulation;
 }
 
 .word-wrap {
@@ -223,6 +254,11 @@ input[type="radio"] {
   text-shadow: none;
 }
 
+.bionic-reading .word-wrap #prefix,
+.bionic-reading .focus-letter {
+  font-weight: 850;
+}
+
 .guide {
   position: absolute;
   left: 50%;
@@ -266,6 +302,7 @@ input[type="radio"] {
   width: min(100%, 720px);
   justify-self: center;
   justify-content: center;
+  flex-wrap: wrap;
 }
 
 .control-button,
@@ -289,6 +326,12 @@ input[type="radio"] {
 
 .control-button.secondary {
   min-width: 98px;
+}
+
+.control-button.is-active {
+  border-color: rgba(244, 90, 84, 0.65);
+  color: var(--accent-contrast);
+  background: linear-gradient(180deg, #ff6a64, var(--accent));
 }
 
 .control-button:disabled {
@@ -355,7 +398,7 @@ select {
 
 .segmented {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 6px;
   padding: 5px;
   border: 1px solid var(--faint);
@@ -370,6 +413,7 @@ select {
   border-radius: 12px;
   color: var(--muted);
   font-weight: 700;
+  font-size: 14px;
 }
 
 .segmented input {
@@ -414,6 +458,45 @@ kbd {
   z-index: 10;
   background: rgba(0, 0, 0, 0.42);
   backdrop-filter: blur(6px);
+}
+
+.focus-mode .topbar,
+.focus-mode .keyboard-hints {
+  opacity: 0.12;
+  pointer-events: none;
+}
+
+.focus-mode .progress-panel,
+.focus-mode .quick-settings,
+.focus-mode .keyboard-hints {
+  display: none;
+}
+
+.focus-mode .app-shell {
+  grid-template-rows: 1px 1fr;
+}
+
+.focus-mode .topbar {
+  min-height: 1px;
+  overflow: hidden;
+}
+
+.focus-mode .reader-layout {
+  grid-template-rows: 1fr auto;
+}
+
+.focus-mode .reader-stage {
+  min-height: calc(100svh - 180px);
+}
+
+.focus-mode .transport {
+  opacity: 0.38;
+  transition: opacity 140ms ease;
+}
+
+.focus-mode .transport:focus-within,
+.focus-mode .transport:hover {
+  opacity: 0.9;
 }
 
 .side-panel {
@@ -535,16 +618,24 @@ textarea {
 
   .transport {
     display: grid;
-    grid-template-columns: 1fr 1.35fr 1fr;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
-  #restartBtn {
-    grid-column: 1 / -1;
+  #restartBtn,
+  #focusModeBtn,
+  #quickTextBtn {
+    min-width: 0;
   }
 
   .control-button,
   .file-button {
-    padding: 0 14px;
+    min-height: 52px;
+    padding: 0 12px;
+    font-size: 15px;
+  }
+
+  .control-button.primary {
+    min-width: 0;
   }
 
   .slider-row {

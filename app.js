@@ -30,7 +30,10 @@ const state = {
     longWordPercent: 5,
     longWordThreshold: 10,
     fadeEnabled: true,
-    fadeDuration: 90
+    fadeDuration: 90,
+    focusMode: false,
+    bionicReading: false,
+    gestures: true
   }
 };
 
@@ -40,8 +43,11 @@ const els = {
   suffix: document.getElementById("suffix"),
   playPauseBtn: document.getElementById("playPauseBtn"),
   restartBtn: document.getElementById("restartBtn"),
+  focusModeBtn: document.getElementById("focusModeBtn"),
+  quickTextBtn: document.getElementById("quickTextBtn"),
   backBtn: document.getElementById("backBtn"),
   forwardBtn: document.getElementById("forwardBtn"),
+  readerStage: document.querySelector(".reader-stage"),
   progressRange: document.getElementById("progressRange"),
   positionLabel: document.getElementById("positionLabel"),
   timeLabel: document.getElementById("timeLabel"),
@@ -85,7 +91,9 @@ const els = {
   fadeDuration: document.getElementById("fadeDuration"),
   fadeDurationValue: document.getElementById("fadeDurationValue"),
   fadeToggle: document.getElementById("fadeToggle"),
-  longWordToggle: document.getElementById("longWordToggle")
+  longWordToggle: document.getElementById("longWordToggle"),
+  bionicToggle: document.getElementById("bionicToggle"),
+  gestureToggle: document.getElementById("gestureToggle")
 };
 
 function loadSettings() {
@@ -149,6 +157,7 @@ function renderWord() {
   restartFade();
 
   document.body.classList.toggle("no-focus", !state.settings.focusLetter);
+  document.body.classList.toggle("bionic-reading", state.settings.bionicReading);
   els.progressRange.max = Math.max(state.tokens.length - 1, 0);
   els.progressRange.value = state.index;
   els.positionLabel.textContent = `${Math.min(state.index + 1, state.tokens.length)} / ${state.tokens.length}`;
@@ -259,6 +268,23 @@ function restartFade() {
   requestAnimationFrame(() => wrap.classList.add("word-fade"));
 }
 
+function setWpm(value) {
+  state.settings.wpm = Math.max(100, Math.min(1000, value));
+  els.wpmSlider.value = state.settings.wpm;
+  els.wpmValue.textContent = `${state.settings.wpm} WPM`;
+  saveSettings();
+  renderWord();
+  if (state.playing) scheduleNext();
+}
+
+function setFocusMode(enabled) {
+  state.settings.focusMode = enabled;
+  document.body.classList.toggle("focus-mode", enabled);
+  els.focusModeBtn.setAttribute("aria-pressed", String(enabled));
+  els.focusModeBtn.classList.toggle("is-active", enabled);
+  saveSettings();
+}
+
 function updateControls() {
   const hasWords = state.tokens.length > 0;
   els.backBtn.disabled = !hasWords || state.index === 0;
@@ -274,7 +300,9 @@ function applySettingsToUi() {
   document.documentElement.style.setProperty("--fade-duration", `${state.settings.fadeDuration}ms`);
   document.body.dataset.font = state.settings.fontFamily;
   document.body.classList.toggle("no-focus", !state.settings.focusLetter);
+  document.body.classList.toggle("bionic-reading", state.settings.bionicReading);
   document.body.classList.toggle("reduced-motion", state.settings.reduceMotion);
+  document.body.classList.toggle("focus-mode", state.settings.focusMode);
 
   els.wpmSlider.value = state.settings.wpm;
   els.wpmValue.textContent = `${state.settings.wpm} WPM`;
@@ -306,6 +334,10 @@ function applySettingsToUi() {
   els.fadeDurationValue.textContent = `${state.settings.fadeDuration} ms`;
   els.fadeToggle.checked = state.settings.fadeEnabled;
   els.longWordToggle.checked = state.settings.longWordPause;
+  els.bionicToggle.checked = state.settings.bionicReading;
+  els.gestureToggle.checked = state.settings.gestures;
+  els.focusModeBtn.setAttribute("aria-pressed", String(state.settings.focusMode));
+  els.focusModeBtn.classList.toggle("is-active", state.settings.focusMode);
 }
 
 function syncPauseControl(inputId, outputId) {
@@ -373,6 +405,8 @@ function closePanels() {
 function bindEvents() {
   els.playPauseBtn.addEventListener("click", () => state.playing ? pause() : play());
   els.restartBtn.addEventListener("click", restart);
+  els.focusModeBtn.addEventListener("click", () => setFocusMode(!state.settings.focusMode));
+  els.quickTextBtn.addEventListener("click", () => openPanel(els.editorPanel));
   els.backBtn.addEventListener("click", () => jump(-10));
   els.forwardBtn.addEventListener("click", () => jump(10));
   els.progressRange.addEventListener("input", () => {
@@ -444,6 +478,11 @@ function bindEvents() {
   settingFromToggle(els.stopParagraphToggle, "stopParagraph");
   settingFromToggle(els.fadeToggle, "fadeEnabled");
   settingFromToggle(els.longWordToggle, "longWordPause");
+  settingFromToggle(els.bionicToggle, "bionicReading", () => {
+    document.body.classList.toggle("bionic-reading", state.settings.bionicReading);
+  });
+  settingFromToggle(els.gestureToggle, "gestures");
+  bindReaderGestures();
 
   document.addEventListener("keydown", (event) => {
     const target = event.target;
@@ -468,6 +507,50 @@ function bindEvents() {
     if (document.visibilityState === "visible" && state.playing) {
       requestWakeLock();
     }
+  });
+}
+
+function bindReaderGestures() {
+  let startX = 0;
+  let startY = 0;
+  let startTime = 0;
+  let lastTap = 0;
+  let tapTimer = null;
+
+  els.readerStage.addEventListener("pointerdown", (event) => {
+    if (!state.settings.gestures || event.pointerType === "mouse") return;
+    startX = event.clientX;
+    startY = event.clientY;
+    startTime = Date.now();
+  });
+
+  els.readerStage.addEventListener("pointerup", (event) => {
+    if (!state.settings.gestures || event.pointerType === "mouse") return;
+    const dx = event.clientX - startX;
+    const dy = event.clientY - startY;
+    const elapsed = Date.now() - startTime;
+    const moved = Math.abs(dx) > 42 || Math.abs(dy) > 42;
+
+    if (moved && Math.abs(dx) > Math.abs(dy)) {
+      const steps = Math.max(1, Math.round(Math.abs(dx) / 56));
+      setWpm(state.settings.wpm + (dx > 0 ? steps * 25 : -steps * 25));
+      return;
+    }
+
+    if (elapsed > 360) return;
+    const now = Date.now();
+    if (now - lastTap < 280) {
+      clearTimeout(tapTimer);
+      lastTap = 0;
+      jump(10);
+      return;
+    }
+
+    lastTap = now;
+    tapTimer = setTimeout(() => {
+      state.playing ? pause() : play();
+      lastTap = 0;
+    }, 260);
   });
 }
 

@@ -26,14 +26,24 @@ For normal use on an iPhone or iPad, you put these files on a website host such 
 - Start, pause, restart, back 10 words, and forward 10 words.
 - WPM from 100 to 1000.
 - Font size, font weight, and typeface choices.
-- Black, dark grey, and light themes.
+- Typeface choices include Monospace, System Sans, Serif, Dyslexic-friendly, OpenDyslexic, Audela Serif, and Glober Sans.
+- Black, dark grey, light, and Papyrus-inspired themes.
 - Optional focus-letter highlighting.
+- Optional Bionic-style reading emphasis.
 - Configurable comma, sentence, new-line, and paragraph pauses.
 - Optional hard stops after sentences, new lines, or paragraphs. Press play or space to continue.
 - Optional long-word slowdown with percentage-per-extra-letter control.
 - 1 to 5 simultaneous words.
 - Optional word fade with configurable duration.
+- Focus mode hides the speed/font controls, expands the reader area, and fades non-reading controls.
+- Touch shortcuts on mobile: tap reader to play/pause, double tap to skip forward, swipe right to increase speed, and swipe left to decrease speed.
 - Mobile-first controls sized for iPhone and iPad Safari.
+
+## Font Notes
+
+This app does not load fonts from the internet because it is designed to make no external network requests. The OpenDyslexic, Audela, and Glober choices will use those fonts if they are installed or later bundled locally. If they are not available, Safari falls back to similar local/system fonts.
+
+The Bionic-style option is implemented locally by emphasizing the leading part of the displayed word. It does not use any external Bionic Reading service or API.
 
 ## Try It On Your Mac First
 

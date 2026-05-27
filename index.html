@@ -50,6 +50,8 @@
           <button id="playPauseBtn" class="control-button primary" type="button"><span aria-hidden="true">▶</span><span>Play</span></button>
           <button id="forwardBtn" class="control-button secondary" type="button"><span aria-hidden="true">⟳</span><span>+10</span></button>
           <button id="restartBtn" class="control-button secondary" type="button"><span aria-hidden="true">↻</span><span>Restart</span></button>
+          <button id="focusModeBtn" class="control-button secondary" type="button" aria-pressed="false"><span aria-hidden="true">◎</span><span>Focus</span></button>
+          <button id="quickTextBtn" class="control-button secondary" type="button"><span aria-hidden="true">✎</span><span>Text</span></button>
         </section>
 
         <section class="quick-settings" aria-label="Primary settings">
@@ -109,6 +111,7 @@
             <label><input type="radio" name="theme" value="black"><span>Black</span></label>
             <label><input type="radio" name="theme" value="grey"><span>Grey</span></label>
             <label><input type="radio" name="theme" value="light"><span>Light</span></label>
+            <label><input type="radio" name="theme" value="papyrus"><span>Papyrus</span></label>
           </div>
         </div>
 
@@ -136,6 +139,9 @@
               <option value="system">System Sans</option>
               <option value="serif">Serif</option>
               <option value="dyslexic">Dyslexic-friendly</option>
+              <option value="opendyslexic">OpenDyslexic</option>
+              <option value="audela">Audela Serif</option>
+              <option value="glober">Glober Sans</option>
             </select>
           </label>
           <label class="slider-row">
@@ -215,6 +221,19 @@
             <span>Long word pause</span>
             <input id="longWordToggle" type="checkbox" checked>
           </label>
+          <label class="toggle-row">
+            <span>Bionic-style reading</span>
+            <input id="bionicToggle" type="checkbox">
+          </label>
+        </div>
+
+        <div class="settings-block">
+          <h3>Touch shortcuts</h3>
+          <label class="toggle-row">
+            <span>Gestures on reader</span>
+            <input id="gestureToggle" type="checkbox" checked>
+          </label>
+          <p class="privacy-note">Tap play or pause. Double tap skips forward. Swipe right speeds up; swipe left slows down.</p>
         </div>
       </div>
     </aside>
