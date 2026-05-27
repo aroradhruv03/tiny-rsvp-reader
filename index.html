@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Tiny RSVP">
+    <meta name="description" content="A privacy-first offline RSVP speed reader.">
+    <title>Tiny RSVP Reader</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <h1>Tiny RSVP Reader</h1>
+        <div class="top-actions" aria-label="App actions">
+          <button class="icon-button" id="editorToggle" type="button" aria-label="Open text editor" title="Text">
+            <span aria-hidden="true">✎</span>
+          </button>
+          <button class="icon-button" id="settingsToggle" type="button" aria-label="Open settings" title="Settings">
+            <span aria-hidden="true">⚙</span>
+          </button>
+        </div>
+      </header>
+
+      <main class="reader-layout">
+        <section class="reader-stage" aria-label="RSVP reader">
+          <div class="guide guide-top" aria-hidden="true"></div>
+          <div class="word-wrap" aria-live="polite" aria-atomic="true">
+            <span id="prefix" class="word-part"></span><span id="focusLetter" class="focus-letter">T</span><span id="suffix" class="word-part"></span>
+          </div>
+          <div class="guide guide-bottom" aria-hidden="true"></div>
+        </section>
+
+        <section class="progress-panel" aria-label="Reading progress">
+          <input id="progressRange" class="progress-range" type="range" min="0" max="0" value="0" aria-label="Reading position">
+          <div class="progress-meta">
+            <span id="positionLabel">0 / 0</span>
+            <span id="timeLabel">0:00</span>
+          </div>
+        </section>
+
+        <section class="transport" aria-label="Reader controls">
+          <button id="backBtn" class="control-button secondary" type="button"><span aria-hidden="true">⟲</span><span>-10</span></button>
+          <button id="playPauseBtn" class="control-button primary" type="button"><span aria-hidden="true">▶</span><span>Play</span></button>
+          <button id="forwardBtn" class="control-button secondary" type="button"><span aria-hidden="true">⟳</span><span>+10</span></button>
+          <button id="restartBtn" class="control-button secondary" type="button"><span aria-hidden="true">↻</span><span>Restart</span></button>
+        </section>
+
+        <section class="quick-settings" aria-label="Primary settings">
+          <label class="slider-row">
+            <span>Speed</span>
+            <input id="wpmSlider" type="range" min="100" max="1000" step="25" value="300">
+            <output id="wpmValue">300 WPM</output>
+          </label>
+          <label class="slider-row">
+            <span>Font</span>
+            <input id="fontSlider" type="range" min="44" max="128" step="2" value="84">
+            <output id="fontValue">84 px</output>
+          </label>
+        </section>
+
+        <section class="keyboard-hints" aria-label="Keyboard shortcuts">
+          <span><kbd>Space</kbd> Play/Pause</span>
+          <span><kbd>←</kbd> Back</span>
+          <span><kbd>→</kbd> Forward</span>
+          <span><kbd>R</kbd> Restart</span>
+        </section>
+      </main>
+    </div>
+
+    <div id="panelScrim" class="panel-scrim" hidden></div>
+
+    <aside id="editorPanel" class="side-panel text-panel" aria-hidden="true" aria-label="Text editor">
+      <div class="sheet-content">
+        <header class="sheet-header">
+          <h2>Text</h2>
+          <button class="icon-button panel-close" type="button" data-close-panel aria-label="Close text editor">×</button>
+        </header>
+        <p class="privacy-note">Paste or open a .txt file. Reading text stays in this browser tab and is never saved.</p>
+        <textarea id="textInput" spellcheck="false" placeholder="Paste text here..."></textarea>
+        <div class="file-row">
+          <label class="file-button">
+            <input id="fileInput" type="file" accept=".txt,text/plain">
+            <span aria-hidden="true">📄</span>
+            <span>Open .txt</span>
+          </label>
+          <button id="loadTextBtn" class="control-button primary" type="button"><span aria-hidden="true">✓</span><span>Load</span></button>
+          <button id="clearTextBtn" class="control-button secondary" type="button"><span aria-hidden="true">⌫</span><span>Clear</span></button>
+        </div>
+      </div>
+    </aside>
+
+    <aside id="settingsPanel" class="side-panel settings-panel" aria-hidden="true" aria-label="Settings">
+      <div class="sheet-content">
+        <header class="sheet-header">
+          <h2>Settings</h2>
+          <button class="icon-button panel-close" type="button" data-close-panel aria-label="Close settings">×</button>
+        </header>
+
+        <div class="settings-block">
+          <h3>Theme</h3>
+          <div class="segmented" role="radiogroup" aria-label="Theme">
+            <label><input type="radio" name="theme" value="black"><span>Black</span></label>
+            <label><input type="radio" name="theme" value="grey"><span>Grey</span></label>
+            <label><input type="radio" name="theme" value="light"><span>Light</span></label>
+          </div>
+        </div>
+
+        <div class="settings-grid">
+          <label class="toggle-row">
+            <span>Focus letter</span>
+            <input id="focusToggle" type="checkbox" checked>
+          </label>
+          <label class="toggle-row">
+            <span>Reduce motion</span>
+            <input id="motionToggle" type="checkbox">
+          </label>
+          <label class="toggle-row">
+            <span>Keep screen awake</span>
+            <input id="wakeToggle" type="checkbox">
+          </label>
+        </div>
+
+        <div class="settings-block">
+          <h3>Font</h3>
+          <label class="select-row">
+            <span>Typeface</span>
+            <select id="fontFamilySelect">
+              <option value="mono">Monospace</option>
+              <option value="system">System Sans</option>
+              <option value="serif">Serif</option>
+              <option value="dyslexic">Dyslexic-friendly</option>
+            </select>
+          </label>
+          <label class="slider-row">
+            <span>Weight</span>
+            <input id="fontWeightSlider" type="range" min="400" max="800" step="50" value="500">
+            <output id="fontWeightValue">500</output>
+          </label>
+        </div>
+
+        <div class="settings-block">
+          <h3>Pauses</h3>
+          <label class="slider-row">
+            <span>Comma</span>
+            <input id="commaPause" type="range" min="0" max="1200" step="50" value="150">
+            <output id="commaPauseValue">150 ms</output>
+          </label>
+          <label class="slider-row">
+            <span>Sentence</span>
+            <input id="sentencePause" type="range" min="0" max="2000" step="50" value="350">
+            <output id="sentencePauseValue">350 ms</output>
+          </label>
+          <label class="slider-row">
+            <span>New line</span>
+            <input id="linePause" type="range" min="0" max="2500" step="50" value="450">
+            <output id="linePauseValue">450 ms</output>
+          </label>
+          <label class="slider-row">
+            <span>Paragraph</span>
+            <input id="paragraphPause" type="range" min="0" max="4000" step="100" value="900">
+            <output id="paragraphPauseValue">900 ms</output>
+          </label>
+          <label class="slider-row">
+            <span>Long word</span>
+            <input id="longWordPercent" type="range" min="0" max="20" step="1" value="5">
+            <output id="longWordPercentValue">5%</output>
+          </label>
+          <label class="slider-row">
+            <span>After letters</span>
+            <input id="longWordThreshold" type="range" min="5" max="16" step="1" value="10">
+            <output id="longWordThresholdValue">10</output>
+          </label>
+        </div>
+
+        <div class="settings-block">
+          <h3>Stop points</h3>
+          <label class="toggle-row">
+            <span>Stop after sentence</span>
+            <input id="stopSentenceToggle" type="checkbox">
+          </label>
+          <label class="toggle-row">
+            <span>Stop after new line</span>
+            <input id="stopLineToggle" type="checkbox">
+          </label>
+          <label class="toggle-row">
+            <span>Stop after paragraph</span>
+            <input id="stopParagraphToggle" type="checkbox">
+          </label>
+        </div>
+
+        <div class="settings-block">
+          <h3>Reading aids</h3>
+          <label class="slider-row">
+            <span>Words at once</span>
+            <input id="chunkSlider" type="range" min="1" max="5" step="1" value="1">
+            <output id="chunkValue">1</output>
+          </label>
+          <label class="slider-row">
+            <span>Word fade</span>
+            <input id="fadeDuration" type="range" min="0" max="500" step="25" value="90">
+            <output id="fadeDurationValue">90 ms</output>
+          </label>
+          <label class="toggle-row">
+            <span>Fade enabled</span>
+            <input id="fadeToggle" type="checkbox" checked>
+          </label>
+          <label class="toggle-row">
+            <span>Long word pause</span>
+            <input id="longWordToggle" type="checkbox" checked>
+          </label>
+        </div>
+      </div>
+    </aside>
+
+    <script src="app.js"></script>
+  </body>
+</html>
